@@ -1,6 +1,6 @@
 # handsonflutter
 
-A new Flutter project.
+Github repository of my course on Flutter.
 
 ## Getting Started
 
