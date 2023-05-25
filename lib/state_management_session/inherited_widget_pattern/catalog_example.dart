@@ -39,10 +39,14 @@ class AppState extends State<AppStateWidget> {
   CatalogData catalogData = CatalogData(selectedItemsIds: []);
 
   void updateItemCart(Item item, {bool remove = false}) {
+
+    List<int> selectedItmIds = [];
+
     if (remove) {
       if (catalogData.selectedItemsIds.contains(item.id)) {
-        List<int> selectedItmIds = catalogData.selectedItemsIds;
-        selectedItmIds.remove(item.id);
+        selectedItmIds
+          ..addAll(catalogData.selectedItemsIds)
+          ..remove(item.id);
         setState(() {
           catalogData = catalogData.copyWith(
             selectedItemsIds: selectedItmIds,
@@ -53,13 +57,15 @@ class AppState extends State<AppStateWidget> {
     }
 
     if (!catalogData.selectedItemsIds.contains(item.id)) {
-      List<int> selectedItmIds = catalogData.selectedItemsIds;
-      selectedItmIds.add(item.id);
+      selectedItmIds
+        ..addAll(catalogData.selectedItemsIds)
+        ..add(item.id);
       setState(() {
         catalogData = catalogData.copyWith(
           selectedItemsIds: selectedItmIds,
         );
       });
+      return;
     }
 
     return;
@@ -94,19 +100,19 @@ class CatalogInheritedWidget extends InheritedWidget {
 
   @override
   bool updateShouldNotify(CatalogInheritedWidget oldWidget) {
-    return oldWidget.catalogData.selectedItemsIds != catalogData.selectedItemsIds;
+    return oldWidget != this;
   }
 }
 
 class CatalogData {
 
   List<Item> catalogItems = [
-    Item(name: "Wrist Watch", price: 1000, imgUrl: "imgUrl"),
-    Item(name: "xPhone 1", price: 80000, imgUrl: "imgUrl"),
-    Item(name: "xPhone 2", price: 100000, imgUrl: "imgUrl"),
-    Item(name: "xPhone 7", price: 90000, imgUrl: "imgUrl"),
-    Item(name: "xPhone 8", price: 75000, imgUrl: "imgUrl"),
-    Item(name: "xPhone X", price: 150000, imgUrl: "imgUrl"),
+    Item(id: 1,name: "Wrist Watch", price: 1000, imgUrl: "https://images.pexels.com/photos/2155319/pexels-photo-2155319.jpeg"),
+    Item(id: 2,name: "xPhone 1", price: 80000, imgUrl: "https://images.pexels.com/photos/2643698/pexels-photo-2643698.jpeg"),
+    Item(id: 3,name: "xPhone 2", price: 100000, imgUrl: "https://images.pexels.com/photos/209695/pexels-photo-209695.jpeg"),
+    Item(id: 4,name: "xPhone 7", price: 90000, imgUrl: "https://images.pexels.com/photos/1092644/pexels-photo-1092644.jpeg"),
+    Item(id: 5,name: "xPhone 8", price: 75000, imgUrl: "https://images.pexels.com/photos/607815/pexels-photo-607815.jpeg"),
+    Item(id: 6,name: "xPhone X", price: 150000, imgUrl: "https://images.pexels.com/photos/719399/pexels-photo-719399.jpeg"),
   ];
 
   final List<int> selectedItemsIds;
@@ -133,12 +139,11 @@ class Item {
   final String imgUrl;
 
   Item({
+    required this.id,
     required this.name,
     required this.price,
     required this.imgUrl,
-}) {
-    id = itemAutoId++;
-  }
+});
 
 }
 
@@ -148,79 +153,121 @@ class MyHomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    List<Item> catalogItems =
-        CatalogInheritedWidget.of(context).catalogData.catalogItems;
+    CatalogData catalogData =
+        CatalogInheritedWidget.of(context).catalogData;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Catalog Example'),
         actions: [
-          Stack(
-            children: [
-              const Icon(Icons.shopping_cart),
-              Positioned(
-                top: 8.0,
-                right: 8.0,
-                child: Container(
-                  padding: const EdgeInsets.all(2.0),
-                  decoration: BoxDecoration(
-                    color: Colors.red,
-                    borderRadius: BorderRadius.circular(10.0),
-                  ),
-                  constraints: const BoxConstraints(
-                    minWidth: 16.0,
-                    minHeight: 16.0,
-                  ),
-                  child: Text(
-                    CatalogInheritedWidget
-                        .of(context)
-                        .catalogData
-                        .selectedItemsIds
-                        .length
-                        .toString(),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 12.0,
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Stack(
+              children: [
+                const Icon(Icons.shopping_cart,size: 24,),
+                Positioned(
+                  top: 8.0,
+                  right: 8.0,
+                  child: Container(
+                    padding: const EdgeInsets.all(2.0),
+                    decoration: BoxDecoration(
+                      color: Colors.red,
+                      borderRadius: BorderRadius.circular(10.0),
                     ),
-                    textAlign: TextAlign.center,
+                    constraints: const BoxConstraints(
+                      minWidth: 16.0,
+                      minHeight: 16.0,
+                    ),
+                    child: Text(
+                      catalogData
+                          .selectedItemsIds
+                          .length
+                          .toString(),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12.0,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       ),
       body: GridView.builder(
         padding: const EdgeInsets.all(16.0),
-        itemCount: catalogItems.length,
+        itemCount: catalogData.catalogItems.length,
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
+          crossAxisCount: 3,
           crossAxisSpacing: 16.0,
           mainAxisSpacing: 16.0,
         ),
         itemBuilder: (BuildContext context, int index) {
-          final item = catalogItems[index];
-
-          return GridTile(
-            child: Column(
-              children: [
-                Image.network(item.imgUrl),
-                const SizedBox(height: 8.0),
-                Text(item.name),
-                const SizedBox(height: 8.0),
-                Text(item.price.toString()),
-                const SizedBox(height: 8.0),
-                ElevatedButton(
-                  onPressed: () {
-                    AppStateWidget.of(context).updateItemCart(item);
-                  },
-                  child: const Text('Add to Cart'),
-                ),
-              ],
-            ),
+          return ItemWidget(
+            item: catalogData.catalogItems[index],
           );
         },
       ),
     );
   }
 }
+
+class ItemWidget extends StatelessWidget {
+
+  final Item item;
+
+  const ItemWidget({
+    Key? key,
+    required this.item,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+
+    CatalogData catalogData =
+        CatalogInheritedWidget.of(context).catalogData;
+
+    bool isInCart = false;
+
+    if (catalogData.selectedItemsIds.contains(item.id)) {
+      isInCart = true;
+    }
+
+
+    String buttonTitle = isInCart ? "Remove from cart" : "Add to cart";
+
+    return GridTile(
+      child: SizedBox(
+        height: MediaQuery.of(context).size.height * (0.4),
+        width: MediaQuery.of(context).size.width * (0.4),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Image.network(
+              item.imgUrl,
+              height: MediaQuery.of(context).size.height * (0.33),
+              width: MediaQuery.of(context).size.width * (0.33),
+            ),
+            const SizedBox(height: 8.0),
+            Text(item.name),
+            const SizedBox(height: 8.0),
+            Text(item.price.toString()),
+            const SizedBox(height: 8.0),
+            ElevatedButton(
+              onPressed: () {
+                AppStateWidget.of(context).updateItemCart(
+                  item,
+                  remove: isInCart,
+                );
+              },
+              child: Text(buttonTitle),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
