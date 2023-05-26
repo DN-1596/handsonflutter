@@ -214,7 +214,7 @@ class MyHomePage extends StatelessWidget {
   }
 }
 
-class ItemWidget extends StatelessWidget {
+class ItemWidget extends StatefulWidget {
 
   final Item item;
 
@@ -224,17 +224,27 @@ class ItemWidget extends StatelessWidget {
   }) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+  State<ItemWidget> createState() => _ItemWidgetState();
+}
 
-    CatalogData catalogData =
-        CatalogInheritedWidget.of(context).catalogData;
+class _ItemWidgetState extends State<ItemWidget> {
 
-    bool isInCart = false;
+  bool isInCart = false;
 
-    if (catalogData.selectedItemsIds.contains(item.id)) {
-      isInCart = true;
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (CatalogInheritedWidget.of(context)
+        .catalogData.selectedItemsIds
+        .contains(widget.item.id)) {
+      setState(() {
+        isInCart = true;
+      });
     }
+  }
 
+  @override
+  Widget build(BuildContext context) {
 
     String buttonTitle = isInCart ? "Remove from cart" : "Add to cart";
 
@@ -246,19 +256,19 @@ class ItemWidget extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Image.network(
-              item.imgUrl,
+              widget.item.imgUrl,
               height: MediaQuery.of(context).size.height * (0.33),
               width: MediaQuery.of(context).size.width * (0.33),
             ),
             const SizedBox(height: 8.0),
-            Text(item.name),
+            Text(widget.item.name),
             const SizedBox(height: 8.0),
-            Text(item.price.toString()),
+            Text(widget.item.price.toString()),
             const SizedBox(height: 8.0),
             ElevatedButton(
               onPressed: () {
                 AppStateWidget.of(context).updateItemCart(
-                  item,
+                  widget.item,
                   remove: isInCart,
                 );
               },
