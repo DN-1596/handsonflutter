@@ -28,7 +28,7 @@ class AppStateWidget extends StatefulWidget {
 
   static AppState of(BuildContext context) {
     final AppState? appState =  context.findAncestorStateOfType<AppState>();
-    assert(appState != null, "No App =State found in the context.");
+    assert(appState != null, "No App State found in the context.");
     return appState!;
   }
 
@@ -38,7 +38,7 @@ class AppState extends State<AppStateWidget> {
 
   CatalogData catalogData = CatalogData(selectedItemsIds: []);
 
-  void updateItemCart(Item item, {bool remove = false}) {
+  void updateItemCart(StoreItem item, {bool remove = false}) {
 
     List<int> selectedItmIds = [];
 
@@ -106,13 +106,13 @@ class CatalogInheritedWidget extends InheritedWidget {
 
 class CatalogData {
 
-  List<Item> catalogItems = [
-    Item(id: 1,name: "Wrist Watch", price: 1000, imgUrl: "https://images.pexels.com/photos/2155319/pexels-photo-2155319.jpeg"),
-    Item(id: 2,name: "xPhone 1", price: 80000, imgUrl: "https://images.pexels.com/photos/2643698/pexels-photo-2643698.jpeg"),
-    Item(id: 3,name: "xPhone 2", price: 100000, imgUrl: "https://images.pexels.com/photos/209695/pexels-photo-209695.jpeg"),
-    Item(id: 4,name: "xPhone 7", price: 90000, imgUrl: "https://images.pexels.com/photos/1092644/pexels-photo-1092644.jpeg"),
-    Item(id: 5,name: "xPhone 8", price: 75000, imgUrl: "https://images.pexels.com/photos/607815/pexels-photo-607815.jpeg"),
-    Item(id: 6,name: "xPhone X", price: 150000, imgUrl: "https://images.pexels.com/photos/719399/pexels-photo-719399.jpeg"),
+  List<StoreItem> catalogItems = [
+    StoreItem(id: 1,name: "Wrist Watch", price: 1000, imgUrl: "https://images.pexels.com/photos/2155319/pexels-photo-2155319.jpeg"),
+    StoreItem(id: 2,name: "xPhone 1", price: 80000, imgUrl: "https://images.pexels.com/photos/2643698/pexels-photo-2643698.jpeg"),
+    StoreItem(id: 3,name: "xPhone 2", price: 100000, imgUrl: "https://images.pexels.com/photos/209695/pexels-photo-209695.jpeg"),
+    StoreItem(id: 4,name: "xPhone 7", price: 90000, imgUrl: "https://images.pexels.com/photos/1092644/pexels-photo-1092644.jpeg"),
+    StoreItem(id: 5,name: "xPhone 8", price: 75000, imgUrl: "https://images.pexels.com/photos/607815/pexels-photo-607815.jpeg"),
+    StoreItem(id: 6,name: "xPhone X", price: 150000, imgUrl: "https://images.pexels.com/photos/719399/pexels-photo-719399.jpeg"),
   ];
 
   final List<int> selectedItemsIds;
@@ -129,7 +129,7 @@ class CatalogData {
 
 }
 
-class Item {
+class StoreItem {
 
   static int itemAutoId = 100;
 
@@ -138,7 +138,7 @@ class Item {
   final int price;
   final String imgUrl;
 
-  Item({
+  StoreItem({
     required this.id,
     required this.name,
     required this.price,
@@ -196,14 +196,10 @@ class MyHomePage extends StatelessWidget {
           ),
         ],
       ),
-      body: GridView.builder(
+      body: ListView.builder(
+        key: UniqueKey(),
         padding: const EdgeInsets.all(16.0),
         itemCount: catalogData.catalogItems.length,
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 3,
-          crossAxisSpacing: 16.0,
-          mainAxisSpacing: 16.0,
-        ),
         itemBuilder: (BuildContext context, int index) {
           return ItemWidget(
             item: catalogData.catalogItems[index],
@@ -216,7 +212,7 @@ class MyHomePage extends StatelessWidget {
 
 class ItemWidget extends StatefulWidget {
 
-  final Item item;
+  final StoreItem item;
 
   const ItemWidget({
     Key? key,
@@ -237,9 +233,7 @@ class _ItemWidgetState extends State<ItemWidget> {
     if (CatalogInheritedWidget.of(context)
         .catalogData.selectedItemsIds
         .contains(widget.item.id)) {
-      setState(() {
-        isInCart = true;
-      });
+         isInCart = true;
     }
   }
 
@@ -248,22 +242,31 @@ class _ItemWidgetState extends State<ItemWidget> {
 
     String buttonTitle = isInCart ? "Remove from cart" : "Add to cart";
 
-    return GridTile(
-      child: SizedBox(
-        height: MediaQuery.of(context).size.height * (0.4),
-        width: MediaQuery.of(context).size.width * (0.4),
+    return SizedBox(
+      key: UniqueKey(),
+      width: MediaQuery.of(context).size.width * (0.4),
+      child: Container(
+        margin: const EdgeInsets.all(8.0),
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.grey),
+          borderRadius: BorderRadius.circular(8),
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Image.network(
-              widget.item.imgUrl,
-              height: MediaQuery.of(context).size.height * (0.33),
-              width: MediaQuery.of(context).size.width * (0.33),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Image.network(
+                widget.item.imgUrl,
+                height: MediaQuery.of(context).size.width * (0.2),
+                width: MediaQuery.of(context).size.width * (0.2),
+                fit: BoxFit.fill,
+              ),
             ),
             const SizedBox(height: 8.0),
             Text(widget.item.name),
             const SizedBox(height: 8.0),
-            Text(widget.item.price.toString()),
+            Text("\$ " + widget.item.price.toString()),
             const SizedBox(height: 8.0),
             ElevatedButton(
               onPressed: () {
